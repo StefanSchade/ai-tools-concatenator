@@ -16,8 +16,16 @@ fn main() -> io::Result<()> {
     let mut output = fs::File::create(output_file)?;
 
     let gitignore_patterns = parse_gitignore(&source_dir);
+    let skipped_directories = vec![".git"]; // Add more directories to this list as needed
 
-    concatenate_dir(Path::new(source_dir), &mut output, 0, &gitignore_patterns, exclude_suffixes)?;
+    concatenate_dir(
+        Path::new(source_dir),
+        &mut output,
+        0,
+        &gitignore_patterns,
+        exclude_suffixes,
+        &skipped_directories,
+    )?;
 
     Ok(())
 }
@@ -41,8 +49,14 @@ fn concatenate_dir(
     depth: usize,
     gitignore_patterns: &[Pattern],
     exclude_suffixes: &[String],
+    skipped_directories: &[&str],
 ) -> io::Result<()> {
     if path.is_dir() {
+        // Check if the directory should be skipped
+        if skipped_directories.iter().any(|&d| path.ends_with(d)) {
+            return Ok(());
+        }
+
         for entry in fs::read_dir(path)? {
             let entry = entry?;
             let path = entry.path();
@@ -59,7 +73,14 @@ fn concatenate_dir(
             }
 
             if path.is_dir() {
-                concatenate_dir(&path, output, depth + 1, gitignore_patterns, exclude_suffixes)?;
+                concatenate_dir(
+                    &path,
+                    output,
+                    depth + 1,
+                    gitignore_patterns,
+                    exclude_suffixes,
+                    skipped_directories,
+                )?;
             } else {
                 // Attempt to read the file as UTF-8, skip if it fails
                 match fs::read_to_string(&path) {
