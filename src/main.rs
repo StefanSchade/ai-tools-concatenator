@@ -61,11 +61,17 @@ fn concatenate_dir(
             if path.is_dir() {
                 concatenate_dir(&path, output, depth + 1, gitignore_patterns, exclude_suffixes)?;
             } else {
-                writeln!(output, "\n// File: {:?} Depth: {}\n", path.display(), depth)?;
-                let mut file = fs::File::open(&path)?;
-                let mut contents = String::new();
-                file.read_to_string(&mut contents)?;
-                writeln!(output, "{}", contents)?;
+                // Attempt to read the file as UTF-8, skip if it fails
+                match fs::read_to_string(&path) {
+                    Ok(contents) => {
+                        writeln!(output, "\n// File: {:?} Depth: {}\n", path.display(), depth)?;
+                        writeln!(output, "{}", contents)?;
+                    },
+                    Err(e) if e.kind() == io::ErrorKind::InvalidData => {
+                        println!("Skipping file with invalid UTF-8 contents: {:?}", path.display());
+                    },
+                    Err(e) => return Err(e),
+                }
             }
         }
     }
