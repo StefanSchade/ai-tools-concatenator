@@ -1,100 +1,32 @@
-use std::{env, fs, io, path::Path};
-use glob::Pattern;
-use std::io::{Read, Write};
+mod config;
+mod file_ops;
+mod utils;
+mod traversal;
+
+use std::env;
+use std::io;
+
+use config::Config;
+use traversal::concatenate_dir;
+use file_ops::{initialize_output_file, read_gitignore};
 
 fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() < 3 {
-        eprintln!("Usage: {} <source_dir> <output_file> [exclude_suffixes...]", args[0]);
-        std::process::exit(1);
-    }
+    let config = Config::parse_arguments(&args)?;
+    let mut output = initialize_output_file(&config.output_file)?;
 
-    let source_dir = &args[1];
-    let output_file = &args[2];
-    let exclude_suffixes = &args[3..];
-
-    let mut output = fs::File::create(output_file)?;
-
-    let gitignore_patterns = parse_gitignore(&source_dir);
-    let skipped_directories = vec![".git"]; // Add more directories to this list as needed
+    let gitignore_patterns = read_gitignore(&config.source_dir)?;
+    let always_exclude = config.default_excludes();
 
     concatenate_dir(
-        Path::new(source_dir),
+        &config.source_dir,
+        &config.source_dir,
         &mut output,
         0,
         &gitignore_patterns,
-        exclude_suffixes,
-        &skipped_directories,
+        &config.exclude_suffixes,
+        &always_exclude,
     )?;
 
-    Ok(())
-}
-
-fn parse_gitignore(source_dir: &str) -> Vec<Pattern> {
-    let gitignore_path = Path::new(source_dir).join(".gitignore");
-    let mut patterns = Vec::new();
-    if let Ok(content) = fs::read_to_string(gitignore_path) {
-        for line in content.lines() {
-            if let Ok(pattern) = Pattern::new(line) {
-                patterns.push(pattern);
-            }
-        }
-    }
-    patterns
-}
-
-fn concatenate_dir(
-    path: &Path,
-    output: &mut fs::File,
-    depth: usize,
-    gitignore_patterns: &[Pattern],
-    exclude_suffixes: &[String],
-    skipped_directories: &[&str],
-) -> io::Result<()> {
-    if path.is_dir() {
-        // Check if the directory should be skipped
-        if skipped_directories.iter().any(|&d| path.ends_with(d)) {
-            return Ok(());
-        }
-
-        for entry in fs::read_dir(path)? {
-            let entry = entry?;
-            let path = entry.path();
-            let path_str = path.to_str().unwrap_or("");
-
-            // Check against .gitignore patterns
-            if gitignore_patterns.iter().any(|p| p.matches(path_str)) {
-                continue;
-            }
-
-            // Exclude by suffix
-            if exclude_suffixes.iter().any(|suffix| path_str.ends_with(suffix)) {
-                continue;
-            }
-
-            if path.is_dir() {
-                concatenate_dir(
-                    &path,
-                    output,
-                    depth + 1,
-                    gitignore_patterns,
-                    exclude_suffixes,
-                    skipped_directories,
-                )?;
-            } else {
-                // Attempt to read the file as UTF-8, skip if it fails
-                match fs::read_to_string(&path) {
-                    Ok(contents) => {
-                        writeln!(output, "\n// File: {:?} Depth: {}\n", path.display(), depth)?;
-                        writeln!(output, "{}", contents)?;
-                    },
-                    Err(e) if e.kind() == io::ErrorKind::InvalidData => {
-                        println!("Skipping file with invalid UTF-8 contents: {:?}", path.display());
-                    },
-                    Err(e) => return Err(e),
-                }
-            }
-        }
-    }
     Ok(())
 }
