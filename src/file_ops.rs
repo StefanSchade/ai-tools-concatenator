@@ -1,4 +1,4 @@
-use std::fs::{self, File, OpenOptions};
+use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::Path;
 use glob::Pattern;
@@ -29,7 +29,7 @@ pub fn read_and_write_file(
 ) -> io::Result<()> {
     let contents = match std::fs::read_to_string(file_path) {
         Ok(contents) => contents,
-        Err(e) => {
+        Err(_e) => {
             eprintln!("Skipping file with non-UTF-8 contents: {}", file_path.display());
             return Ok(());  // Return Ok to continue processing other files
         }

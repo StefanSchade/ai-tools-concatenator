@@ -1,16 +1,20 @@
-use std::path::{Path, PathBuf};
-use glob::Pattern;
+use std::path::Path;
+
 use crate::config::Config;
 
 pub fn is_excluded(
     path: &Path,
     config: &Config,  // Now passing the whole config
 ) -> bool {
+
+    let path_str = path.to_str().unwrap_or("");
+
     let relative_path = path.strip_prefix(&config.source_dir)
         .unwrap()
         .to_str()
         .unwrap_or("")
         .replace("\\", "/"); // Normalize path separators
+
 
     // Exclude if path is the output file path
     if path == config.output_file {
@@ -28,7 +32,7 @@ pub fn is_excluded(
     }
 
     // Check for excluded suffixes
-    if config.exclude_suffixes.iter().any(|suffix| path.to_str().unwrap_or("").ends_with(suffix)) {
+    if config.exclude_set.is_match(path_str) {
         return true;
     }
 

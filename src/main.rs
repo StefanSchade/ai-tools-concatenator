@@ -5,11 +5,11 @@ mod traversal;
 
 use config::Config;
 use traversal::concatenate_dir;
-use file_ops::{initialize_output_file, read_gitignore};
+
 
 use std::env;
 use std::fs::OpenOptions;
-use std::io::{self, Write};
+use std::io::{self};
 
 fn main() {
     let args: Vec<String> = env::args().collect();

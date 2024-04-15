@@ -1,9 +1,9 @@
 use std::fs;
 use std::fs::File;
 use std::io::{self};
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 
-use glob::Pattern;
+
 
 use crate::config::Config;
 use crate::file_ops::read_and_write_file;
