@@ -1,4 +1,4 @@
-use std::fs::{self, File};
+use std::fs::{self, File, OpenOptions};
 use std::io::{self, Write};
 use std::path::Path;
 use glob::Pattern;
@@ -21,29 +21,30 @@ pub fn read_gitignore(source_dir: &Path) -> io::Result<Vec<Pattern>> {
     Ok(patterns)
 }
 
-
-
 pub fn read_and_write_file(
     config: &Config,
+    file_handle: &mut File,
     file_path: &Path,
     depth: usize,
 ) -> io::Result<()> {
-    let contents = fs::read_to_string(file_path)?;
+    let contents = match std::fs::read_to_string(file_path) {
+        Ok(contents) => contents,
+        Err(e) => {
+            eprintln!("Skipping file with non-UTF-8 contents: {}", file_path.display());
+            return Ok(());  // Return Ok to continue processing other files
+        }
+    };
 
-    // Open the output file as specified in config
-    let mut output = fs::File::create(&config.output_file)?;
-
-    // Determine number of digits needed for line numbers
     let lines = contents.lines().count();
     let num_digits = (lines as f64).log10().floor() as usize + 1;
 
-    writeln!(output, "\n// File: {} Depth: {}\n", file_path.strip_prefix(&config.source_dir).unwrap().display(), depth)?;
+    writeln!(file_handle, "\n// File: {} Depth: {}\n", file_path.strip_prefix(&config.source_dir).unwrap().display(), depth)?;
     for (i, line) in contents.lines().enumerate() {
         if config.line_numbering {
             let line_number = format!("{:0width$}", i + 1, width = num_digits);
-            writeln!(output, "{} {}", line_number, line)?;
+            writeln!(file_handle, "{} {}", line_number, line)?;
         } else {
-            writeln!(output, "{}", line)?;
+            writeln!(file_handle, "{}", line)?;
         }
     }
 

@@ -50,6 +50,7 @@ impl Config {
             self.source_dir.join(".git"),
             self.source_dir.join("target"),
             self.source_dir.join(".idea"),
+            self.source_dir.join("*/node_modules/*"),
         ]
     }
 }

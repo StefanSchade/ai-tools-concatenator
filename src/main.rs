@@ -8,6 +8,7 @@ use traversal::concatenate_dir;
 use file_ops::{initialize_output_file, read_gitignore};
 
 use std::env;
+use std::fs::OpenOptions;
 use std::io::{self, Write};
 
 fn main() {
@@ -27,10 +28,11 @@ fn main() {
 }
 
 fn run(config: &Config) -> io::Result<()> {
-    let mut output = file_ops::initialize_output_file(&config.output_file)?;
-    let gitignore_patterns = file_ops::read_gitignore(&config.source_dir)?;
-    let always_exclude = config.default_excludes();
+    let mut output = OpenOptions::new()
+        .write(true)
+        .append(true)
+        .create(true)
+        .open(&config.output_file)?;
 
-    concatenate_dir(config, &config.source_dir, 0)
-
+    concatenate_dir(config, &config.source_dir, &mut output, 0)
 }

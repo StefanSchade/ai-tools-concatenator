@@ -1,4 +1,5 @@
 use std::fs;
+use std::fs::File;
 use std::io::{self};
 use std::path::{Path, PathBuf};
 
@@ -11,6 +12,7 @@ use crate::utils;
 pub fn concatenate_dir(
     config: &Config,
     current_path: &Path,
+    file_handle: &mut File,
     depth: usize,
 ) -> io::Result<()> {
     if current_path.is_dir() {
@@ -18,14 +20,14 @@ pub fn concatenate_dir(
             let entry = entry?;
             let path = entry.path();
 
-            if utils::is_excluded(&path, &config.source_dir, &config.gitignore_patterns, &config.always_exclude, &config.exclude_suffixes) {
+            if utils::is_excluded(&path, config) {
                 continue;
             }
 
             if path.is_dir() {
-                concatenate_dir(config, &path, depth + 1)?;
+                concatenate_dir(config, &path, file_handle, depth + 1)?;
             } else {
-                read_and_write_file(config, &path, depth)?;
+                read_and_write_file(config, file_handle, &path, depth)?;
             }
         }
     }
