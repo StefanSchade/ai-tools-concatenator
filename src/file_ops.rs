@@ -2,6 +2,7 @@ use std::fs::{self, File};
 use std::io::{self, Write};
 use std::path::Path;
 use glob::Pattern;
+use crate::config::Config;
 
 pub fn initialize_output_file(path: &Path) -> io::Result<File> {
     File::create(path)
@@ -21,22 +22,29 @@ pub fn read_gitignore(source_dir: &Path) -> io::Result<Vec<Pattern>> {
 }
 
 
+
 pub fn read_and_write_file(
+    config: &Config,
     file_path: &Path,
-    output: &mut fs::File,
-    base_path: &Path,
     depth: usize,
 ) -> io::Result<()> {
-    // Attempt to read the file as UTF-8, skip if it fails
-    match fs::read_to_string(file_path) {
-        Ok(contents) => {
-            writeln!(output, "\n// File: {} Depth: {}\n", file_path.strip_prefix(base_path).unwrap().display(), depth)?;
-            writeln!(output, "{}", contents)?;
-        },
-        Err(e) if e.kind() == io::ErrorKind::InvalidData => {
-            println!("Skipping file with invalid UTF-8 contents: {}", file_path.display());
-        },
-        Err(e) => return Err(e),
+    let contents = fs::read_to_string(file_path)?;
+
+    // Open the output file as specified in config
+    let mut output = fs::File::create(&config.output_file)?;
+
+    // Determine number of digits needed for line numbers
+    let lines = contents.lines().count();
+    let num_digits = (lines as f64).log10().floor() as usize + 1;
+
+    writeln!(output, "\n// File: {} Depth: {}\n", file_path.strip_prefix(&config.source_dir).unwrap().display(), depth)?;
+    for (i, line) in contents.lines().enumerate() {
+        if config.line_numbering {
+            let line_number = format!("{:0width$}", i + 1, width = num_digits);
+            writeln!(output, "{} {}", line_number, line)?;
+        } else {
+            writeln!(output, "{}", line)?;
+        }
     }
 
     Ok(())
