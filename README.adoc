@@ -56,8 +56,11 @@ concatenator.exe ./ source.txt *.JPG *.jpg *lock.json --line-numbers
 === Distributing Binaries
 Compiled binaries can be found on the Releases page, facilitating easier access for users without a Rust setup.
 
-=== Download Link for Windows Executable
-Download the Windows executable
+=== Download Executable
+
+For users who do not want to compile the project themselves, I will publish a windows executable on the https://github.com/StefanSchade/ai-tools-concatenator/releases[Releases page]
+
+Executables for MacOS and Linux might follow - at the moment, I do not have a setup on these environments though.
 
 === Contributing
 To contribute to this project, follow these steps:
