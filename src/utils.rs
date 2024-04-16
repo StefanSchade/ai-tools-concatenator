@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::Path;
 
 use crate::config::Config;
@@ -15,9 +16,13 @@ pub fn is_excluded(
         .unwrap_or("")
         .replace("\\", "/"); // Normalize path separators
 
+    // Resolve both paths to their absolute canonical forms to avoid mismatches
+    let canonical_path = fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    let canonical_output = fs::canonicalize(&config.output_file).unwrap_or_else(|_| config.output_file.clone());
 
-    // Exclude if path is the output file path
-    if path == config.output_file {
+    // Check if the path is the output file path
+    if canonical_path == canonical_output {
+        println!("Excluding the output file");
         return true;
     }
 

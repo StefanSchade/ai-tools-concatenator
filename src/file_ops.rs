@@ -4,10 +4,6 @@ use std::path::Path;
 use glob::Pattern;
 use crate::config::Config;
 
-pub fn initialize_output_file(path: &Path) -> io::Result<File> {
-    File::create(path)
-}
-
 pub fn read_gitignore(source_dir: &Path) -> io::Result<Vec<Pattern>> {
     let gitignore_path = source_dir.join(".gitignore");
     let mut patterns = Vec::new();

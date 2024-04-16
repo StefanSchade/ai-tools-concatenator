@@ -1,0 +1,36 @@
+= Changelog
+// All notable changes to this project will be documented in this file. The format is based on link:https://keepachangelog.com/en/1.0.0/[Keep a Changelog], and this project adheres to link:https://semver.org/spec/v2.0.0.html[Semantic Versioning].
+
+// == [Unreleased]
+// ### Added
+// - New features that have been added.
+// ### Changed
+// - Changes in existing functionality.
+// ### Deprecated
+// - Soon-to-be removed features.
+// ### Removed
+// - Now removed features that were once deprecated.
+// ### Fixed
+// - Any bug fixes.
+// ### Security
+// - Any security improvements.
+
+== [1.0] - 2024-04-16
+=== Added
+* Initial release of the project.
+Concatenate all text files in a directory and subdirectories.
+* Exclude files based on glob patterns such as `*.jpg` or `*lock.json`.
+* Exclude directories specified in the `.gitignore` - *The following limitations apply:*
+** Only the `.gitignore` on the top level of the repo is considered
+** Only full directories to be excluded are considered
+** Pattern matches are not considered at this point and have to be passed as a parameter separately
+* Certain paths are always excluded
+** any path containing `node_modules`
+** `target`
+** `.git`
+** `.idea`
+* Optional line numbering for each line in the concatenated output to help the KI to associate compilation errors with the correct location in the source.
+
+// === Fixed
+// - Bug fix A details.
+// - Bug fix B details.

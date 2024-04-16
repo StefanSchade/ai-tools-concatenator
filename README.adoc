@@ -1,0 +1,79 @@
+== AI Tool: Concateneator
+
+This tool is designed to concatenate text files from a specified directory structure into a single output file. It allows for the exclusion of files based on glob patterns and optionally numbers each line in the resulting output.
+
+After applying this on a project repo, the output can then be shared with a Large Language Model (LLM) to provide context to your interaction.
+
+== Features
+
+* Concatenate all text files in a directory and subdirectories.
+* Exclude files based on glob patterns such as `*.jpg` or `*lock.json`.
+* Exclude directories specified in the `.gitignore` - *The following limitations apply:*
+** Only the `.gitignore` on the top level of the repo is considered
+** Only full directories to be excluded are considered
+** Pattern matches are not considered at this point and have to be passed as a parameter separately
+* Certain paths are always excluded
+    ** any path containing `node_modules`
+    ** `target`
+    ** `.git`
+    ** `.idea`
+* Optional line numbering for each line in the concatenated output to help the KI to associate compilation errors with the correct location in the source.
+
+== Prerequisites
+
+If you want to compile the file yourself, you have to setup a Rust environment:
+
+- Rust Programming Language: [Install Rust](https://www.rust-lang.org/tools/install)
+- Cargo (Rust's Package Manager, included with Rust installation)
+
+then you can perform the compilation with the usual commands, e.g. `cargo build --release`
+
+== Usage
+
+Use the executable like follows: `concatenator.exe <source_dir> <output_file> [exclude_patterns...] [--line-numbers]`
+
+* `<source_dir>`: The directory from which files will be read.
+* `<output_file>`: The file to which concatenated output will be written.
+* `[exclude_patterns...]`: Optional. Glob patterns to exclude files from being processed.
+* `--line-numbers`: Optional. Prepend each line with its line number.
+
+=== Examples
+
+To concatenate all files in the logs directory into a single `output.txt`, excluding any .jpg and .tmp files:
+
+[bash]
+----------
+concatenator.exe logs output.txt *.jpg *.tmp
+----------
+
+To concatenate all files in a repo into a single `sources.txt`, excluding pictures and the `package-lock.json` while including line numbers:
+
+[bash]
+----------
+concatenator.exe ./ source.txt *.JPG *.jpg *lock.json --line-numbers
+----------
+
+=== Distributing Binaries
+Compiled binaries can be found on the Releases page, facilitating easier access for users without a Rust setup.
+
+=== Download Link for Windows Executable
+Download the Windows executable
+
+=== Contributing
+To contribute to this project, follow these steps:
+
+. Fork this repository.
+. Create a branch: git checkout -b <branch_name>.
+. Make your changes and commit them: git commit -m '<commit_message>'
+. Push to the original branch: git push origin <project_name>/<location>
+. Create the pull request.
+. Alternatively, see the GitHub documentation on creating a pull request.
+
+=== Contact
+If you want to contact me, you can reach me at dr_stefan_schade@yahoo.com
+
+=== License
+This project is licensed under the MIT License - see the LICENSE.md file for details.
+
+=== AI Use
+While creating the project, ChatGPT has been used
